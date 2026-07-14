@@ -1,0 +1,31 @@
+name: Publish Package to Maven Central
+
+on:
+  release:
+    types: [published]
+
+jobs:
+  publish:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Check out project repository
+        uses: actions/checkout@v4
+
+      - name: Set up Java and GPG Signing Keys
+        uses: actions/setup-java@v4
+        with:
+          java-version: '17'
+          distribution: 'temurin'
+          server-id: central
+          server-username: MAVEN_CENTRAL_USERNAME
+          server-password: MAVEN_CENTRAL_PASSWORD
+          gpg-private-key: ${{ secrets.GPG_PRIVATE_KEY }}
+          gpg-passphrase: MAVEN_GPG_PASSPHRASE
+
+      - name: Execute Deploy to Sonatype
+        run: |
+          mvn clean deploy \
+            --batch-mode \
+            -DMAVEN_CENTRAL_USERNAME="${{ secrets.MAVEN_CENTRAL_USERNAME }}" \
+            -DMAVEN_CENTRAL_PASSWORD="${{ secrets.MAVEN_CENTRAL_PASSWORD }}" \
+            -DGPG_PASSPHRASE="${{ secrets.GPG_PASSPHRASE }}"
